@@ -28,14 +28,23 @@ export const getOutput: ( movie: Movie ) => string = movie => {
 export const getHTMLOutput: ( movie: Movie ) => string = movie => {
     let output = '';
 
+    const advice = getAdvice( movie.score );
+    const adviceOutput = advice ? `<p class="h2">${ advice }</p>` : '';
+
+    output += '<div class="bg-light p-4 mt-4">';
+    output += '<div class="movie">';
+    output += '<div class="movie-poster">';
+    output += `<img src="${ movie.poster }" />`;
+    output += '</div>';
     output += '<dl>';
     output += `<dt>Title</dt><dd>${ movie.title }<dd>`;
     output += `<dt>Year</dt><dd>${ movie.year }<dd>`;
     output += `<dt>Rating</dt><dd>${ movie.score }<dd>`;
     output += `<dt>Description</dt><dd>${ movie.description }<dd>`;
     output += '</dl>';
-
-    output += `<p>${ getAdvice( movie.score ) }</p>`;
+    output += '</div>';
+    output += adviceOutput;
+    output += '</div>';
 
     return output;
 }
@@ -66,4 +75,8 @@ export const getMoviesFromRows: ( rows: CSVRows ) => Movies = ( rows ) => {
     } );
 }
 
-export const findMovie = ( title: string, movies: Movies ) => movies.find( movie => movie.title === title );
+export const matchMovie = ( title: string, movie: Movie ) => {
+    const titleIsNotEmpty = title.trim().length;
+    const titleMatches = movie.title.toLowerCase().indexOf( title.toLowerCase() ) > -1;
+    return titleIsNotEmpty && titleMatches;
+}

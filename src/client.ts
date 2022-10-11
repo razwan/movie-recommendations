@@ -1,4 +1,6 @@
-import { findMovie, getHTMLOutput } from "./movie";
+import { Movie, Movies, getHTMLOutput, matchMovie } from "./movie";
+
+const STORAGE_ITEM = 'movies';
 
 const ready = () => {
   return new Promise<void>( ( resolve, reject ) => {
@@ -11,43 +13,58 @@ const ready = () => {
 }
 
 const fetchMovies = async () => {
-  const response = await fetch( 'http://localhost:3000/movies', {
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      }
-  } );
+  const response = await fetch( 'http://localhost:3000/movies' );
 
   return await response.json();
 }
 
-const getMovies = async ( resetCache = false ) => {
-  const storage = localStorage.getItem( 'movies' );
+const getMovies: () => Promise<Movies> = async ( resetCache = false ) => {
+  const storage = localStorage.getItem( STORAGE_ITEM );
 
   if ( storage && ! resetCache ) {
     return JSON.parse( storage );
   }
 
   const movies = await fetchMovies();
-  localStorage.setItem( 'movies', JSON.stringify( movies ) );
+  localStorage.setItem( STORAGE_ITEM, JSON.stringify( movies ) );
+  const clearButton = getClearCacheButton();
+  clearButton!.disabled = false;
   return movies;
+}
+
+const getClearCacheButton = () => {
+  return document.querySelector( '#clear' ) as HTMLButtonElement;
+}
+
+const handleClearCacheButton = () => {
+  const clearButton = getClearCacheButton();
+  
+  clearButton?.addEventListener( 'click', () => {
+    localStorage.removeItem( STORAGE_ITEM );
+    clearButton.disabled = true;
+  } );
 }
 
 (async() => {
   await ready();
   await getMovies();
+
   const input: HTMLInputElement | null = document.querySelector( '#input' );
-  const submit: HTMLButtonElement | null = document.querySelector( '#submit' );
+  const form: HTMLButtonElement | null = document.querySelector( '#form' );
   const container: HTMLElement | null = document.querySelector( '#container' );
 
-  submit?.addEventListener( 'click', async (e: Event) => {
+  handleClearCacheButton();
+
+  form?.addEventListener( 'submit', async (e: Event) => {
     e.preventDefault();
     const movies = await getMovies();
     const searchTerm = input?.value ?? '';
-    const foundMovie = findMovie( searchTerm, movies );
+    const found = movies.filter( movie => matchMovie( searchTerm, movie ) );
 
-    if ( container && foundMovie ) {
-      container.innerHTML = getHTMLOutput( foundMovie );
+    if ( container ) {
+      container.innerHTML = found.reduce( ( acc: string, curr: Movie ) => {
+        return acc + getHTMLOutput( curr );
+      }, '' );
     }
   } )
   

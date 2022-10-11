@@ -1,29 +1,58 @@
 import { CSVRows } from '../csv';
-import { getMoviesFromRows } from '../movie';
+import { getMoviesFromRows, matchMovie } from '../movie';
 
-test( '', () => {
-    const rows = [
-        [ 'title','genre','poster','year','duration','score','description' ],
-        [
-            `For My Father (Sof Shavua B'Tel Aviv)`,
-            `Drama`,
-            `http://dummyimage.com/240x180.png/dddddd/000000`,
-            `1992`,
-            `71`,
-            `0.63`,
-            "Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis."
-        ]
-    ] as CSVRows;
+const generateMovie = () => {
+    return {
+        description: '',
+        duration: 90,
+        genre: '',
+        poster: '',
+        score: 0.5,
+        title: 'Once upon a time in Hollywood',
+        year: 1990,
+    };
+}
 
-    const movies = getMoviesFromRows( rows );
+test( 'movie is found when search term is exact match', () => {
+    // arrange
+    const movie = generateMovie();
+    movie.title = 'Once upon a time in Hollywood';
+    const searchTerm = movie.title;
+    const movies = [ movie ];
 
-    expect( movies[0] ).toEqual( {
-        title: expect.any( String ),
-        genre: expect.any( String ),
-        poster: expect.any( String ),
-        year: expect.any( Number ),
-        duration: expect.any( Number ),
-        score: expect.any( Number ),
-        description: expect.any( String ),
-    } )
+    // act
+    const found = movies.filter( movie => matchMovie( searchTerm, movie ) );
+
+    // assert
+    expect( found.length ).toBe( 1 );
+} )
+
+test( 'no movies are found when search term is empty', () => {
+    // arrange
+    const searchTerm = '';
+    const movie = generateMovie();
+    movie.title = 'Once upon a time in Hollywood';
+    const movies = [ movie ];
+
+    // act
+    const found = movies.filter( movie => matchMovie( searchTerm, movie ) );
+
+    // assert
+    expect( found.length ).toBe( 0 );
+} )
+
+test( 'search is case insensitive', () => {
+    // arrange
+    const movie = generateMovie();
+    movie.title = 'Once upon a time in Hollywood';
+    const movies = [ movie ];
+    const searchTerms = [ movie.title.toLowerCase(), movie.title.toUpperCase() ];
+
+    searchTerms.forEach( searchTerm => {
+        // act
+        const found = movies.filter( movie => matchMovie( searchTerm, movie ) );
+
+        // assert
+        expect( found.length ).toBe( 1 );
+    } );
 } )
