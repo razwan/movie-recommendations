@@ -14,10 +14,6 @@ app.get( '/', async (req, res) => {
     res.sendFile(path.resolve(__dirname, '../index.html'));
 } );
 
-app.get( '/', async (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../index.html'));
-} );
-
 app.get( '/movies', cors(), async (req, res) => {
     const rows = await readCSV("./src/movies.csv");
     const movies = getMoviesFromRows( rows ); 
