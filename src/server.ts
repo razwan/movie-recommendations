@@ -1,7 +1,8 @@
 import express from 'express';
-import { readCSV } from './csv';
-import { getMoviesFromRows } from './movie';
 import path from 'path';
+
+import { getMoviesFromCSVFile } from './utils';
+import { getMoviesFromCSVFormat } from './movie';
 
 const app = express();
 const port = 3000;
@@ -13,13 +14,12 @@ app.get( '/', async (req, res) => {
 } );
 
 app.get( '/movies', async (req, res) => {
-    const rows = await readCSV("./src/movies.csv");
-    const movies = getMoviesFromRows( rows ); 
+    const movies = await getMoviesFromCSVFile( "./src/movies.csv", "," );
 
     res.type( 'application/json' );
-    res.send( JSON.stringify( movies ) )
+    res.send( JSON.stringify( movies ) );
 } );
 
 app.listen( port, () => {
-    console.log(`Example app listening on port ${port}`) 
+    console.log(`App listening on port ${ port }`) 
 } );

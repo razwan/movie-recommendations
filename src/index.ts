@@ -1,7 +1,7 @@
 import readline from "readline";
 
-import { readCSV } from "./csv";
-import { matchMovie, getMoviesFromRows, getOutput } from "./movie";
+import { getMoviesFromCSVFile } from "./utils";
+import { findMovie, getMoviesFromCSVFormat, getOutput } from "./movie";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -17,10 +17,9 @@ const prompt: () => Promise<string> = () => {
 }
 
 (async () => {
-    const rows = await readCSV("./src/movies.csv");
-    const movies = getMoviesFromRows( rows ); 
+    const movies = await getMoviesFromCSVFile( "./src/movies.csv", "," );
     const titleToSearch = await prompt();
-    const found = movies.filter( movie => matchMovie( titleToSearch, movie ) );
+    const found = findMovie( titleToSearch, movies );
 
     found.forEach( movie => {
         console.log( getOutput( movie ) );

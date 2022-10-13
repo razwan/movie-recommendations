@@ -1,4 +1,4 @@
-import { Movie, Movies, getHTMLOutput, matchMovie } from "./movie";
+import { Movie, Movies, getHTMLOutput, findMovie } from "./movie";
 
 const STORAGE_ITEM = 'movies';
 
@@ -59,7 +59,7 @@ const handleClearCacheButton = () => {
     e.preventDefault();
     const movies = await getMovies();
     const searchTerm = input?.value ?? '';
-    const found = movies.filter( movie => matchMovie( searchTerm, movie ) );
+    const found = findMovie( searchTerm, movies );
 
     if ( container ) {
       container.innerHTML = found.reduce( ( acc: string, curr: Movie ) => {

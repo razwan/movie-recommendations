@@ -1,4 +1,4 @@
-import type { CSVRows } from './csv';
+import * as csv from "csv";
 import { getAdvice } from './advice';
 
 export interface Movie {
@@ -61,22 +61,35 @@ const createMovie: ( obj: Record<string, string> ) => Movie = ( obj ) => {
     };
 }
 
-export const getMoviesFromRows: ( rows: CSVRows ) => Movies = ( rows ) => {
-    const fields = rows.splice(0, 1)[0] as Array<keyof Movie>;
+const parseCSV: ( content: string ) => Promise<Array<Array<string>>> = ( content: string ) => {
+    return new Promise( ( resolve, reject ) => {
+        csv.parse( content, ( err, records ) => {
+            resolve( records );
+        } );
+    } );
+}
 
-    return rows.map( row => {
+export const getMoviesFromCSVFormat: ( content: string, delimiter: string ) => Promise<Array<Movie>> = async ( content, delimiter ) => {
+    const rows = await parseCSV( content )
+    const fields = rows.splice(0, 1)[0] as Array<string>;
+
+    return rows.map( movieFields => {
         const obj: Record<string, string> = {};
     
         fields.forEach( ( field, index ) => {
-            obj[ field ] = row[ index ];
+            obj[ field ] = movieFields[ index ];
         } );
 
         return createMovie( obj );
     } );
 }
 
-export const matchMovie = ( title: string, movie: Movie ) => {
+const matchMovie = ( title: string, movie: Movie ) => {
     const titleIsNotEmpty = title.trim().length;
     const titleMatches = movie.title.toLowerCase().indexOf( title.toLowerCase() ) > -1;
     return titleIsNotEmpty && titleMatches;
+}
+
+export const findMovie = ( title: string, movies: Array<Movie> ) => {
+    return movies.filter( movie => matchMovie( title, movie ) );
 }
